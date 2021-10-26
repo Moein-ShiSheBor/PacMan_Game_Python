@@ -24,13 +24,6 @@ bg_img = pygame.transform.scale(bg_img, (screen_width, screen_hight))
 restart_image =pygame.image.load('image/restart.png')
 restart_image = pygame.transform.scale(restart_image, (100, 100))
 
-"""
-def draw_grid():
-    for line in range(0, 13):
-        pygame.draw.line(screen, (255, 255, 255), (0, line * tile_size), (screen_width, line * tile_size))
-        pygame.draw.line(screen, (255, 255, 255), (line * tile_size, 0), (line * tile_size, screen_hight))
-"""
-
 class Button():
     def __init__(self, x, y, image):
         self.image = image
@@ -263,7 +256,6 @@ while run:
     world.draw()
     food.update()
     finish = player.update(finish)
-    #draw_grid()
 
     if finish:
         if restart_button.draw():
