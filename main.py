@@ -33,7 +33,6 @@ restart_image = pygame.transform.scale(restart_image, (100, 100))
 
 class World_maker():
     def __init__(self):
-        # self.data = [[0]*16]*16
 
         self.data = [[0 for i in range(screen_width // 50)] for j in range(screen_width // 50)]
 
@@ -44,6 +43,7 @@ class World_maker():
         self.make_column(screen_width // 50 - 1)
         self.random_block()
 
+        # food and pacman
         self.make_pacman()
         self.make_food()
 
