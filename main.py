@@ -310,6 +310,9 @@ while run:
 
     if finish:
         if restart_button.draw():
+            world_data = World_maker()
+            world = World(world_data.data)
+            food = Food(world.pacman_place[0], world.pacman_place[1])
             player = Player(world.food_place[0], world.food_place[1])
             finish = not finish
 
