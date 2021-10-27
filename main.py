@@ -1,5 +1,5 @@
 import pygame
-from pygame.locals import *
+import random as rand
 
 pygame.init()
 
@@ -8,8 +8,8 @@ clock = pygame.time.Clock()
 fps = 100
 
 # screen size
-screen_width = 600
-screen_hight = 600
+screen_width = 800
+screen_hight = 800
 
 screen = pygame.display.set_mode((screen_width, screen_hight))
 pygame.display.set_caption('PacMan')
@@ -21,8 +21,72 @@ finish = False
 # load image
 bg_img = pygame.image.load('image/background.png')
 bg_img = pygame.transform.scale(bg_img, (screen_width, screen_hight))
-restart_image =pygame.image.load('image/restart.png')
+restart_image = pygame.image.load('image/restart.png')
 restart_image = pygame.transform.scale(restart_image, (100, 100))
+
+
+# Data
+# 0 -> empty
+# 1 -> block
+# 2 -> pacman
+# 3 -> food
+
+class World_maker():
+    def __init__(self):
+        # self.data = [[0]*16]*16
+
+        self.data = [[0 for i in range(screen_width // 50)] for j in range(screen_width // 50)]
+
+        # block making
+        self.make_floor_and_ceiling(0)
+        self.make_floor_and_ceiling(screen_width // 50 - 1)
+        self.make_column(0)
+        self.make_column(screen_width // 50 - 1)
+        self.random_block()
+
+        self.make_pacman()
+        self.make_food()
+
+    def make_floor_and_ceiling(self, row):
+        for i in range(0, screen_width // 50):
+            self.data[row][i] = 1
+
+    def make_column(self, col):
+        for j in range(0, screen_width // 50):
+            self.data[j][col] = 1
+
+    def random_block(self):
+        number_of_blocks = rand.randint(0, 10)
+        counter = 0
+
+        while counter < number_of_blocks:
+            row, col = self.random_col_and_row()
+
+            if self.data[row][col] == 0:
+                self.data[row][col] = 1
+                counter += 1
+
+    def make_pacman(self):
+        row, col = self.random_col_and_row()
+
+        if self.data[row][col] == 0:
+            self.data[row][col] = 2
+        else:
+            self.make_pacman()
+
+    def make_food(self):
+        row, col = self.random_col_and_row()
+
+        if self.data[row][col] == 0:
+            self.data[row][col] = 3
+        else:
+            self.make_food()
+
+    def random_col_and_row(self):
+        row = rand.randint(1, screen_width // 50 - 2)
+        col = rand.randint(1, screen_width // 50 - 2)
+        return row, col
+
 
 class Button():
     def __init__(self, x, y, image):
@@ -34,7 +98,7 @@ class Button():
 
     def draw(self):
         action = False
-        #mouse position
+        # mouse position
         pos = pygame.mouse.get_pos()
         if self.rect.collidepoint(pos):
             if pygame.mouse.get_pressed()[0] and not self.click:
@@ -49,9 +113,10 @@ class Button():
 
         return action
 
+
 class Player():
     def __init__(self, x, y):
-      self.reset(x, y)
+        self.reset(x, y)
 
     def update(self, finish):
         dx = 0
@@ -105,10 +170,10 @@ class Player():
 
             # collision
             for tile in world.tile_list:
-               if tile[1].colliderect(self.rect.x + dx, self.rect.y, self.wigth, self.height):
-                   dx = 0
-               elif tile[1].colliderect(self.rect.x, self.rect.y+ dy, self.wigth, self.height):
-                   dy = 0
+                if tile[1].colliderect(self.rect.x + dx, self.rect.y, self.wigth, self.height):
+                    dx = 0
+                elif tile[1].colliderect(self.rect.x, self.rect.y + dy, self.wigth, self.height):
+                    dy = 0
             # end game
             if food.rect.colliderect(self.rect.x + dx, self.rect.y + dy, self.wigth, self.height):
                 finish = True
@@ -119,7 +184,7 @@ class Player():
 
         # draw player
         screen.blit(self.image, self.rect)
-        #pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
+        # pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
 
         return finish
 
@@ -186,12 +251,12 @@ class Food():
             screen.blit(self.img, self.rect)
 
 
-
-
 class World():
 
     def __init__(self, data):
         self.tile_list = []
+        self.pacman_place = []
+        self.food_place = []
 
         # load_image
         block_img = pygame.image.load('image/block.png')
@@ -207,43 +272,29 @@ class World():
                     rect.y = row_count * tile_size
                     tile = (img, rect)
                     self.tile_list.append(tile)
+                if tile == 2:
+                    self.pacman_place.append(col_count * tile_size)
+                    self.pacman_place.append(row_count * tile_size)
+                if tile == 3:
+                    self.food_place.append(col_count * tile_size)
+                    self.food_place.append(row_count * tile_size)
                 col_count += 1
             row_count += 1
 
     def draw(self):
         for tile in self.tile_list:
             screen.blit(tile[0], tile[1])
-            #pygame.draw.rect(screen, (255, 255, 255), tile[1], 2)
+            # pygame.draw.rect(screen, (255, 255, 255), tile[1], 2)
 
-# Data
-# 0 -> empty
-# 1 -> block
-# 2 -> pacman
-# 3 -> food
-world_data = [
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1],
-    [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1],
-    [1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-]
 
 # make objects
-world = World(world_data)
-
-food = Food(400, 100)
-player = Player(100, 400)
+world_data = World_maker()
+world = World(world_data.data)
+food = Food(world.pacman_place[0], world.pacman_place[1])
+player = Player(world.food_place[0], world.food_place[1])
 
 # creat buttons
-restart_button = Button(screen_width // 2 - 60, screen_hight // 2 - 50, restart_image)
-
+restart_button = Button(screen_width // 2 - 50, screen_hight // 2 - 50, restart_image)
 
 run = True
 
@@ -259,9 +310,8 @@ while run:
 
     if finish:
         if restart_button.draw():
-            player = Player(250, 250)
+            player = Player(world.food_place[0], world.food_place[1])
             finish = not finish
-
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
